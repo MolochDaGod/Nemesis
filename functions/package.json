@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "build:gameplay": "NEXUS_ENV=gameplay npm run build",
+    "build:log": "NEXUS_ENV=log npm run build",
+    "build:minting": "NEXUS_ENV=minting npm run build",
+    "build:deck": "NEXUS_ENV=deck npm run build",
+    "build:events": "NEXUS_ENV=events npm run build",
+    "build:pvp": "NEXUS_ENV=pvp npm run build",
+    "build:pve": "NEXUS_ENV=pve npm run build",
+    "build:wallet": "NEXUS_ENV=wallet npm run build"
+  }
+}
