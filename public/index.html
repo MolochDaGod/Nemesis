@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
     <script src="https://unpkg.com/@crossmint/client-sdk-react-ui"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
@@ -255,26 +256,68 @@
         <div class="scene">
             <div class="card" id="card">
                 <!-- Front card face (Email Login) -->
-               <div class="card-face card-face-front" style="background-image: url('https://storage.googleapis.com/nexus-nemesis-assets-model-wave-458100-h7/red_background.png');">
-        <div class="card-content">
-            <form id="login-form" class="space-y-4">
-                <div class="space-y-2">
-                    <label for="email" class="text-gray-300 block text-sm">Email</label>
-                    <input type="email" id="email" placeholder="warlord@grudgestudio.com" class="w-full px-4 py-2 rounded-md text-white" required>
-                </div>
-                <div class="space-y-2">
-                    <label for="password" class="text-gray-300 block text-sm">Password</label>
-                    <input type="password" id="password" placeholder="Enter password" class="w-full px-4 py-2 rounded-md text-white" required>
-                </div>
-                <div class="flex justify-between">
-                    <button type="submit" id="login-btn" class="bg-gradient-to-r from-red-800 to-red-600 text-white py-2 px-4 rounded-md font-medium">Login</button>
-                    <button type="button" id="register-btn" class="bg-gradient-to-r from-blue-800 to-blue-600 text-white py-2 px-4 rounded-md font-medium">Register</button>
-                </div>
-            </form>
-            <!-- Existing Discord login button -->
-        </div>
-    </div>
-
+                <div class="card-face card-face-front" style="background-image: url('https://storage.googleapis.com/nexus-nemesis-assets-model-wave-458100-h7/red_background.png');">
+                    <div class="card-overlay"></div>
+                    <div class="card-badge">EMAIL LOGIN</div>
+                    <div class="card-content">
+                        <div class="flex-1 flex flex-col justify-center">
+                            <div class="text-center mb-6">
+                                <h2 class="text-2xl font-bold mb-1">BATTLE AWAITS</h2>
+                                <p class="text-gray-400 text-sm">Create or connect wallet to continue your conquest</p>
+                            </div>
+                            
+                            <form id="login-form" class="space-y-4">
+                                <div class="space-y-2">
+                                    <label for="email" class="text-gray-300 block text-sm">Email</label>
+                                    <input 
+                                        type="email" 
+                                        id="email" 
+                                        placeholder="warlord@grudgestudio.com"
+                                        class="w-full px-4 py-2 rounded-md text-white"
+                                        required
+                                    >
+                                </div>
+                                <div class="space-y-2">
+                                    <label for="password" class="text-gray-300 block text-sm">Password</label>
+                                    <input 
+                                        type="password" 
+                                        id="password" 
+                                        placeholder="Enter password"
+                                        class="w-full px-4 py-2 rounded-md text-white"
+                                        required
+                                    >
+                                </div>
+                                <div class="flex justify-between pt-2">
+                                    <button 
+                                        type="submit"
+                                        id="login-btn"
+                                        class="bg-gradient-to-r from-red-800 to-red-600 hover:from-red-700 hover:to-red-500 text-white py-2 px-4 rounded-md font-medium"
+                                    >
+                                        LOGIN
+                                    </button>
+                                    <button 
+                                        type="button"
+                                        id="register-btn"
+                                        class="bg-gradient-to-r from-blue-800 to-blue-600 hover:from-blue-700 hover:to-blue-500 text-white py-2 px-4 rounded-md font-medium"
+                                    >
+                                        REGISTER
+                                    </button>
+                                </div>
+                            </form>
+                            
+                            <div class="relative flex items-center gap-4 py-4">
+                                <div class="border-t border-zinc-800 flex-grow"></div>
+                                <span class="text-xs text-zinc-500">OR</span>
+                                <div class="border-t border-zinc-800 flex-grow"></div>
+                            </div>
+                            
+                            <button 
+                                id="discord-login"
+                                class="w-full bg-indigo-900/30 border border-indigo-800 text-white hover:bg-indigo-800/50 py-2 rounded-md font-medium flex items-center justify-center"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20.317 4.492c-1.53-.69-3.17-1.2-4.885-1.49a.084.084 0 0 0-.09.036c-.242.42-.512.996-.7 1.444a16.089 16.089 0 0 0-4.854 0c-.188-.448-.464-1.025-.705-1.444a.09.09 0 0 0-.09-.036 19.03 19.03 0 0 0-4.884 1.491.075.075 0 0 0-.035.027C.533 9.093-.32 13.555.099 17.961a.08.08 0 0 0 .031.055 19.237 19.237 0 0 0 5.786 2.925.084.084 0 0 0 .092-.028c.495-.68.94-1.396 1.321-2.146a.082.082 0 0 0-.045-.115c-.576.337-1.178.628-1.805.865a.083.083 0 0 1-.008-.138c.121-.09.242-.186.357-.283a.085.085 0 0 1 .085-.013c4.296 1.968 8.948 1.968 13.201 0a.085.085 0 0 1 .085.013c.116.097.237.193.358.283a.083.083 0 0 1-.007.139c-.576.337-1.178.628-1.805.865a.082.082 0 0 0-.045.115c.388.75.826 1.466 1.32 2.146a.083.083 0 0 0 .092.028 19.188 19.188 0 0 0 5.786-2.925.085.085 0 0 0 .032-.055c.5-5.177-.838-9.674-3.549-13.442a.065.065 0 0 0-.035-.027zM8.02 15.278c-1.14 0-2.08-1.049-2.08-2.337 0-1.288.918-2.337 2.08-2.337 1.168 0 2.096 1.056 2.08 2.337 0 1.288-.918 2.337-2.08 2.337zm7.683 0c-1.14 0-2.08-1.049-2.08-2.337 0-1.288.918-2.337 2.08-2.337 1.168 0 2.096 1.056 2.08 2.337 0 1.288-.918 2.337-2.08 2.337z"/>
+                                </svg>
                                 CONNECT WITH DISCORD
                             </button>
                         </div>
@@ -506,44 +549,25 @@
 
     <script>
         // Firebase Configuration
-        const firebaseConfig = { /* Your config */ };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
-        // DOM Elements
-        const loginForm = document.getElementById('login-form');
-        const loginBtn = document.getElementById('login-btn');
-        const registerBtn = document.getElementById('register-btn');
-        const discordLoginBtn = document.getElementById('discord-login');
-        const connectWalletBtn = document.getElementById('connect-wallet');
-        const walletAddressInput = document.getElementById('wallet-address');
-        const userDashboard = document.getElementById('user-dashboard');
-        const openPacksBtn = document.getElementById('open-packs-btn');
-
-        // Crossmint Config
-        const CROSSMINT_PROJECT_ID = "8410e23e-d003-4061-9b65-7c886a6c46ec";
-        const CROSSMINT_SERVER_KEY = "sk_production_6627PmBFDZBZzt8ZgeSZ8AiD5e1hUsjyV3K1YQVpkkPEnfwGHhQng8ZhMmpQcv4gnNPSdZTmkAwP7xZBFTdAe5Z9BuwE5pBEq3AAKgaXr5ctKHLzDrj7VNqmW5m7nqVrLajZDnCoFSdSLeseS3KcaFxRh6z5BCdXJJKcwJZbyX3pNrQn7ksFKvcHPVzV7NSp3hmHWsMt4A1ADCDB4Utk1mnr"; // Replace with your key
-        const WEBHOOK_URL = "https://discord.com/api/webhooks/1343000704968556628/Zcbixg1sbvTZ2ptuKa5LkDyqOEhYkCTKebvaMlGKBIcZmqIgQJz6j92u1yRR6ImAYfra";
-
-        let currentWallet = null;
-        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyD7mR6uRQ8RNqOf9nCjATLiXL3orJ39soo",
-            authDomain: "Model-wave-458100-h7-9bf03.firebaseapp.com",
-            projectId: "Model-wave-458100-h7-9bf03",
-            storageBucket: "Model-wave-458100-h7-9bf03",
+            authDomain: "model-wave-458100-h7-9bf03.firebaseapp.com",
+            projectId: "model-wave-458100-h7-9bf03",
+            storageBucket: "model-wave-458100-h7-9bf03.appspot.com",
             messagingSenderId: "1021678965111",
             appId: "1:1021678965111:web:8d2147a9fcc2359c771172"
         };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
+        const db = firebase.firestore();
 
         // DOM elements
         const card = document.getElementById('card');
         const flipToBackBtn = document.getElementById('flip-to-back');
         const flipToFrontBtn = document.getElementById('flip-to-front');
         const loginForm = document.getElementById('login-form');
+        const loginBtn = document.getElementById('login-btn');
+        const registerBtn = document.getElementById('register-btn');
         const discordLoginBtn = document.getElementById('discord-login');
         const discordOAuthBtn = document.getElementById('discord-oauth');
         const connectWalletBtn = document.getElementById('connect-wallet');
@@ -566,11 +590,18 @@
         const cardsProgressBar = document.getElementById('cards-progress-bar');
         const packsOwned = document.getElementById('packs-owned');
         const cardsOwned = document.getElementById('cards-owned');
+        const milestone1 = document.getElementById('milestone-1');
+        const milestone1Text = document.getElementById('milestone-1-text');
+        const milestone2 = document.getElementById('milestone-2');
+        const milestone2Text = document.getElementById('milestone-2-text');
+        const milestone3 = document.getElementById('milestone-3');
+        const milestone3Text = document.getElementById('milestone-3-text');
+        const milestone4 = document.getElementById('milestone-4');
+        const milestone4Text = document.getElementById('milestone-4-text');
 
         // Crossmint and webhook config
         const CROSSMINT_PROJECT_ID = "8410e23e-d003-4061-9b65-7c886a6c46ec";
         const CROSSMINT_SERVER_KEY = "sk_production_6627PmBFDZBZzt8ZgeSZ8AiD5e1hUsjyV3K1YQVpkkPEnfwGHhQng8ZhMmpQcv4gnNPSdZTmkAwP7xZBFTdAe5Z9BuwE5pBEq3AAKgaXr5ctKHLzDrj7VNqmW5m7nqVrLajZDnCoFSdSLeseS3KcaFxRh6z5BCdXJJKcwJZbyX3pNrQn7ksFKvcHPVzV7NSp3hmHWsMt4A1ADCDB4Utk1mnr";
-        const CROSSMINT_NFT_URL = "https://crossmint.com/api/2022-06-09/nfts";
         const WEBHOOK_URL = "https://discord.com/api/webhooks/1343000704968556628/Zcbixg1sbvTZ2ptuKa5LkDyqOEhYkCTKebvaMlGKBIcZmqIgQJz6j92u1yRR6ImAYfra";
         const DISCORD_CLIENT_ID = "1342593452793270302";
         const DISCORD_REDIRECT_URI = "https://www.grudgeplatform.com/minter.html";
@@ -584,25 +615,35 @@
         };
 
         // Check for existing session
-        const checkLoggedInUser = () => {
-            const walletAddress = sessionStorage.getItem('walletAddress');
-            if (walletAddress) {
-                currentWallet = walletAddress;
+        auth.onAuthStateChanged(async user => {
+            if (user && sessionStorage.getItem('walletAddress')) {
+                currentWallet = sessionStorage.getItem('walletAddress');
+                const playerDoc = await db.collection('players').doc(user.uid).get();
+                if (playerDoc.exists) {
+                    const playerData = playerDoc.data();
+                    cardStats.userPacks = playerData.packs || 0;
+                    cardStats.userCards = playerData.owned_cards ? playerData.owned_cards.length : 0;
+                    sessionStorage.setItem('userPacks', cardStats.userPacks);
+                    sessionStorage.setItem('userCards', cardStats.userCards);
+                }
                 showUserDashboard();
             }
-        };
+        });
 
         // Show user dashboard
-        const showUserDashboard = () => {
+        function showUserDashboard() {
             card.classList.add('hidden');
             userDashboard.classList.remove('hidden');
             walletDisplay.textContent = currentWallet ? `${currentWallet.slice(0, 6)}...${currentWallet.slice(-4)}` : "No wallet connected";
             userDisplayName.textContent = "Warlord";
             updateCardStatsDisplay();
-        };
+        }
 
         // Update card stats display
-        function updateCardStatsDisplay() {
+        async function updateCardStatsDisplay() {
+            const counterDoc = await db.collection('counters').doc('cards').get();
+            cardStats.totalCards = counterDoc.exists ? counterDoc.data().count : 0;
+            sessionStorage.setItem('totalCards', cardStats.totalCards);
             seasonProgress.textContent = `Season0: ${cardStats.totalCards.toLocaleString()} / 100,000 Cards`;
             cardsMintedCount.textContent = `${cardStats.totalCards.toLocaleString()} / 100,000`;
             const progressPercentage = Math.min((cardStats.totalCards / 100000) * 100, 100);
@@ -645,23 +686,61 @@
             card.classList.remove('is-flipped');
         });
 
-        // Email login with Firebase
+        // Email Registration
+        registerBtn.addEventListener('click', async () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const wallet = await createWallet(email);
+                await db.collection('players').doc(userCredential.user.uid).set({
+                    wallet_address: wallet.address,
+                    gbux_balance: 1000,
+                    owned_cards: [],
+                    packs: 0
+                });
+                sessionStorage.setItem('walletAddress', wallet.address);
+                currentWallet = wallet.address;
+                await sendWebhook(`New user registered: ${email} - Wallet: ${wallet.address}`);
+                showUserDashboard();
+            } catch (error) {
+                console.error("Registration error:", error);
+                alert("Registration failed: " + error.message);
+            }
+        });
+
+        // Email Login
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
             try {
-                await auth.signInWithEmailAndPassword(email, 'defaultPassword');
-                sessionStorage.setItem('walletAddress', email);
-                currentWallet = email;
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                const userDoc = await db.collection('players').doc(userCredential.user.uid).get();
+                let walletAddress;
+                if (userDoc.exists) {
+                    walletAddress = userDoc.data().wallet_address;
+                } else {
+                    const wallet = await createWallet(email);
+                    walletAddress = wallet.address;
+                    await db.collection('players').doc(userCredential.user.uid).set({
+                        wallet_address: walletAddress,
+                        gbux_balance: 1000,
+                        owned_cards: [],
+                        packs: 0
+                    });
+                }
+                sessionStorage.setItem('walletAddress', walletAddress);
+                currentWallet = walletAddress;
                 await sendWebhook(`Email login: ${email}`);
                 showUserDashboard();
             } catch (error) {
                 console.error("Login error:", error);
-                alert("Failed to login: " + error.message);
+                alert("Login failed: " + error.message);
             }
         });
 
-        // Discord login with Firebase
+        // Discord Login
         discordLoginBtn.addEventListener('click', async () => {
             const provider = new firebase.auth.OAuthProvider('discord.com');
             provider.setCustomParameters({
@@ -671,8 +750,22 @@
             });
             try {
                 const result = await auth.signInWithPopup(provider);
-                sessionStorage.setItem('walletAddress', result.user.email);
-                currentWallet = result.user.email;
+                const userDoc = await db.collection('players').doc(result.user.uid).get();
+                let walletAddress;
+                if (userDoc.exists) {
+                    walletAddress = userDoc.data().wallet_address;
+                } else {
+                    const wallet = await createWallet(result.user.email);
+                    walletAddress = wallet.address;
+                    await db.collection('players').doc(result.user.uid).set({
+                        wallet_address: walletAddress,
+                        gbux_balance: 1000,
+                        owned_cards: [],
+                        packs: 0
+                    });
+                }
+                sessionStorage.setItem('walletAddress', walletAddress);
+                currentWallet = walletAddress;
                 await sendWebhook(`Discord login: ${result.user.email}`);
                 showUserDashboard();
             } catch (error) {
@@ -690,8 +783,22 @@
             });
             try {
                 const result = await auth.signInWithPopup(provider);
-                sessionStorage.setItem('walletAddress', result.user.email);
-                currentWallet = result.user.email;
+                const userDoc = await db.collection('players').doc(result.user.uid).get();
+                let walletAddress;
+                if (userDoc.exists) {
+                    walletAddress = userDoc.data().wallet_address;
+                } else {
+                    const wallet = await createWallet(result.user.email);
+                    walletAddress = wallet.address;
+                    await db.collection('players').doc(result.user.uid).set({
+                        wallet_address: walletAddress,
+                        gbux_balance: 1000,
+                        owned_cards: [],
+                        packs: 0
+                    });
+                }
+                sessionStorage.setItem('walletAddress', walletAddress);
+                currentWallet = walletAddress;
                 await sendWebhook(`Discord OAuth login: ${result.user.email}`);
                 showUserDashboard();
             } catch (error) {
@@ -702,17 +809,30 @@
 
         // Wallet connect handler
         connectWalletBtn.addEventListener('click', async () => {
-            const walletAddress = walletAddressInput.value.trim();
-            if (walletAddress.startsWith('0x') && walletAddress.length === 42) {
-                sessionStorage.setItem('walletAddress', walletAddress);
-                currentWallet = walletAddress;
-                await sendWebhook(`Wallet connected: ${walletAddress}`);
+            const walletAddressInputValue = walletAddressInput.value.trim();
+            if (walletAddressInputValue.startsWith('0x') && walletAddressInputValue.length === 42) {
+                sessionStorage.setItem('walletAddress', walletAddressInputValue);
+                currentWallet = walletAddressInputValue;
+                if (auth.currentUser) {
+                    await db.collection('players').doc(auth.currentUser.uid).set({
+                        wallet_address: walletAddressInputValue
+                    }, { merge: true });
+                }
+                await sendWebhook(`Wallet connected: ${walletAddressInputValue}`);
                 showUserDashboard();
-            } else if (walletAddress.includes('@')) {
+            } else if (walletAddressInputValue.includes('@')) {
                 try {
-                    const wallet = await createWallet(walletAddress);
+                    const wallet = await createWallet(walletAddressInputValue);
                     sessionStorage.setItem('walletAddress', wallet.address);
                     currentWallet = wallet.address;
+                    if (auth.currentUser) {
+                        await db.collection('players').doc(auth.currentUser.uid).set({
+                            wallet_address: wallet.address,
+                            gbux_balance: 1000,
+                            owned_cards: [],
+                            packs: 0
+                        }, { merge: true });
+                    }
                     await sendWebhook(`Wallet created: ${wallet.address}`);
                     showUserDashboard();
                 } catch (error) {
@@ -720,21 +840,22 @@
                     alert("Failed to create wallet: " + error.message);
                 }
             } else {
-                alert("Please enter a valid Ethereum wallet address or email");
+                alert("Please enter a valid Polygon wallet address or email");
             }
         });
 
         // Crossmint wallet creation
         async function createWallet(email) {
-            const response = await fetch(`https://staging.crossmint.com/api/v1-alpha1/wallets`, {
+            const response = await fetch('https://staging.crossmint.com/api/v1-alpha1/wallets', {
                 method: 'POST',
                 headers: {
                     'X-PROJECT-ID': CROSSMINT_PROJECT_ID,
+                    'X-API-KEY': CROSSMINT_SERVER_KEY,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     email: email,
-                    chain: 'story-testnet'
+                    chain: 'polygon'
                 })
             });
             if (!response.ok) {
@@ -767,7 +888,7 @@
 
         pvpBattleBtn.addEventListener('click', () => {
             sessionStorage.setItem('pvpMode', 'true');
-            window.location.href = "/Nexus.html";
+            window.location.href = "/nexus.html";
         });
 
         eventsBtn.addEventListener('click', () => {
@@ -787,6 +908,7 @@
             sessionStorage.removeItem('walletAddress');
             sessionStorage.removeItem('userPacks');
             sessionStorage.removeItem('userCards');
+            sessionStorage.removeItem('totalCards');
             currentWallet = null;
             userDashboard.classList.add('hidden');
             card.classList.remove('hidden');
@@ -808,7 +930,7 @@
         });
 
         // Create particle effect
-        const createParticles = () => {
+        function createParticles() {
             const particlesContainer = document.getElementById('particles');
             const particleCount = 50;
             for (let i = 0; i < particleCount; i++) {
@@ -823,12 +945,12 @@
                 particle.style.animation = `float ${Math.random() * 10 + 10}s linear infinite`;
                 particlesContainer.appendChild(particle);
             }
-        };
+        }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             createParticles();
-            checkLoggedInUser();
+            updateCardStatsDisplay();
         });
     </script>
 </body>
