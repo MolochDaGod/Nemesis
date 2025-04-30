@@ -1,11 +1,11 @@
-{
-  "name": "grudgeplatform-frontend",
-  "version": "1.0.0",
-  "dependencies": {
-    "@crossmint/client-sdk-react-ui": "^1.0.0",
-    "firebase": "^10.7.1"
-  },
-  "devDependencies": {
-    "vite": "^4.4.9"
-  }
-}
+const express = require('express');
+const app = express();
+
+app.get('/', (req, res) => {
+  res.send('Hello World');
+});
+
+const PORT = 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
