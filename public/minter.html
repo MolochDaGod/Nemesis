@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grudge Warlords - Card Minter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=MedievalSharp&family=Rajdhani:wght@500;600&family=Orbitron:wght@500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-sha256@0.9.0/sha256.min.js"></script>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div class="bg-overlay"></div>
+    <div id="codex-ui">
+        <header>
+            <div class="tab-buttons-left">
+                <button class="tab-button active" data-tab="library">Library</button>
+                <button class="tab-button" data-tab="create-card">Create Card</button>
+                <button class="tab-button" data-tab="build">Build</button>
+            </div>
+            <div class="tab-buttons-right">
+                <button class="tab-button" data-tab="pvp">PvP</button>
+                <button class="tab-button" data-tab="pve">PvE</button>
+                <button class="tab-button" data-tab="packs">Packs (<span id="pack-count">0</span>)</button>
+                <button class="tab-button" data-tab="events">Events</button>
+                <button class="tab-button" data-tab="auction-house">Auction House</button>
+            </div>
+            <div class="flex items-center gap-5" id="user-section">
+                <div class="flex items-center gap-4 text-[#D4A017] text-xl">
+                    <div id="user-avatar" class="user-avatar">
+                        <img src="/assets/logo.png" alt="User Avatar" class="user-avatar-img">
+                    </div>
+                    <div id="user-info">
+                        <span id="username-display">Not logged in</span>
+                        <span id="gbux-balance">Balance: 1000 $GBuX</span>
+                    </div>
+                </div>
+                <button id="login-btn" class="btn">Login with Discord</button>
+            </div>
+        </header>
+
+        <!-- Library Tab -->
+        <div class="tab-content active" id="library">
+            <div class="sub-tabs">
+                <button class="sub-tab-button active" data-sub-tab="all">All</button>
+                <button class="sub-tab-button" data-sub-tab="owned">Owned</button>
+                <button class="sub-tab-button" data-sub-tab="minions">Minions</button>
+                <button class="sub-tab-button" data-sub-tab="spells">Spells</button>
+                <button class="sub-tab-button" data-sub-tab="mana-low">Mana 0-3</button>
+                <button class="sub-tab-button" data-sub-tab="mana-high">Mana 4+</button>
+                <input type="text" id="search-bar" class="input-field w-1/3" placeholder="Search cards...">
+                <button id="toggle-owned" class="toggle-owned">Show Owned Only</button>
+            </div>
+            <div class="carousel flex items-center">
+                <button class="carousel-btn" id="library-left">◄</button>
+                <div id="library-cards" class="cards-container flex-1"></div>
+                <button class="carousel-btn" id="library-right">►</button>
+            </div>
+        </div>
+
+        <!-- Create Card Tab -->
+        <div class="tab-content" id="create-card">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-black bg-opacity-75 p-5 rounded-xl border-4 border-[#4A2F1A]">
+                    <h2 class="text-3xl font-bold text-center text-[#D4A017] mb-5 font-['MedievalSharp']">Card Minter</h2>
+                    <div class="mb-5">
+                        <label class="block text-[#D4A017] mb-2 font-bold">Image for Card</label>
+                        <div class="file-upload" id="file-upload">
+                            <div class="file-upload-icon">📁</div>
+                            <div class="file-upload-text">Click to Upload Image</div>
+                        </div>
+                        <input type="file" id="card-image-input" accept="image/*">
+                    </div>
+                    <div class="mb-5">
+                        <label class="block text-[#D4A017] mb-2 font-bold">Attack</label>
+                        <div class="stat-label">
+                            <span>Power</span>
+                            <span id="attack-value">1</span>
+                        </div>
+                        <div class="range-slider">
+                            <input type="range" id="attack-slider" min="1" max="10" value="1">
+                        </div>
+                        <div class="text-sm text-gray-400">+10 $GBuX per attack point</div>
+                    </div>
+                    <div class="mb-5">
+                        <label class="block text-[#D4A017] mb-2 font-bold">Health</label>
+                        <div class="stat-label">
+                            <span>Durability</span>
+                            <span id="health-value">1</span>
+                        </div>
+                        <div class="range-slider">
+                            <input type="range" id="health-slider" min="1" max="10" value="1">
+                        </div>
+                        <div class="text-sm text-gray-400">+10 $GBuX per health point</div>
+                    </div>
+                    <div class="mb-5">
+                        <label class="block text-[#D4A017] mb-2 font-bold">Additional Abilities</label>
+                        <div class="checkbox-container">
+                            <input type="checkbox" id="ability-taunt" class="fancy-checkbox">
+                            <label for="ability-taunt" class="checkbox-label">Add Taunt <span class="gbux-amount">(+20 $GBuX)</span></label>
+                        </div>
+                        <div class="checkbox-container">
+                            <input type="checkbox" id="ability-heal" class="fancy-checkbox">
+                            <label for="ability-heal" class="checkbox-label">Add +1 Health to Allies <span class="gbux-amount">(+20 $GBuX)</span></label>
+                        </div>
+                    </div>
+                    <div class="text-center mt-8">
+                        <div id="cost-display" class="mb-3 text-xl text-[#D4A017] font-bold">Total Cost: 20 $GBuX</div>
+                        <button id="mint-button" class="btn-mint">Mint Card</button>
+                    </div>
+                </div>
+                <div class="flex flex-col items-center justify-center">
+                    <h2 class="text-3xl font-bold text-center text-[#D4A017] mb-5 font-['MedievalSharp']">Card Preview</h2>
+                    <div class="card-preview" id="card-preview">
+                        <div class="card-face card-front">
+                            <div class="card-layers">
+                                <img src="/assets/iron_will_background.png" class="card-background" id="card-bg">
+                                <div class="tribe-effect" id="tribe-effect">
+                                    <img src="/assets/flicker_effect.png" class="flicker-effect" style="width: 100%; height: 100%; object-fit: contain;">
+                                </div>
+                                <div id="rare-effect" class="card-rarity-effect hidden"></div>
+                                <img src="/assets/background.png" class="card-minion hidden" id="card-minion-img">
+                                <div class="card-name" id="card-name">Your Card</div>
+                                <div class="card-stats">
+                                    <div class="stat" id="card-attack">1</div>
+                                    <div class="stat" id="card-health">1</div>
+                                </div>
+                                <div class="card-cost" id="card-cost">1</div>
+                                <div class="card-description" id="card-description">
+                                    No special abilities yet.
+                                </div>
+                                <div class="card-ability-icons" id="ability-icons"></div>
+                                <div class="card-serial" id="card-serial">Season 0 #???/100,000</div>
+                            </div>
+                        </div>
+                        <div class="card-face card-back"></div>
+                    </div>
+                    <div class="mt-5 text-center text-gray-300">
+                        <p>Your card will be randomly assigned to one of five tribes:</p>
+                        <p class="mt-2">Iron Will - Blood For Conquest - Fabled - Tribal War - Ethereal Signature</p>
+                        <p class="mt-4 text-sm text-gray-400">Cards have a chance to gain rare traits and abilities!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Build Tab -->
+        <div class="tab-content" id="build">
+            <div class="flex flex-col h-full">
+                <div class="deck-slots mb-5 flex gap-4 justify-center">
+                    <button class="deck-slot active" data-slot="1">Deck 1</button>
+                    <button class="deck-slot" data-slot="2">Deck 2</button>
+                    <button class="deck-slot" data-slot="3">Deck 3</button>
+                </div>
+                <div class="flex gap-5 flex-1 h-full">
+                    <div class="bg-gray-800 bg-opacity-95 rounded-lg p-5 border-4 border-[#4A2F1A] flex-1 flex flex-col">
+                        <h2 class="text-3xl font-bold text-[#D4A017] mb-5 text-center">Selected Cards (<span id="deck-count">0</span>/20)</h2>
+                        <input type="text" id="deck-name" class="input-field mb-5 w-full" placeholder="Deck Name">
+                        <div id="selected-cards" class="grid grid-cols-4 gap-2.5 flex-1 overflow-y-auto"></div>
+                        <button id="save-deck-btn" class="w-full mt-5 btn">Save Deck</button>
+                    </div>
+                    <div class="bg-gray-800 bg-opacity-95 rounded-lg p-5 border-4 border-[#4A2F1A] flex-1 flex flex-col">
+                        <h2 class="text-3xl font-bold text-[#D4A017] mb-5 text-center">Available Cards</h2>
+                        <input type="text" id="deck-search" class="input-field mb-5 w-full" placeholder="Search available cards...">
+                        <div id="deck-builder-cards" class="grid grid-cols-4 gap-2.5 flex-1 overflow-y-auto"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PvP Tab -->
+        <div class="tab-content" id="pvp">
+            <h2 class="text-3xl font-bold text-[#D4A017] mb-5 text-center">PvP Arena</h2>
+            <div class="text-center">
+                <button id="start-pvp-btn" class="btn py-3 px-8 text-xl">Start PvP Match</button>
+                <div id="pvp-status" class="mt-3 text-[#ADD8E6] hidden"></div>
+            </div>
+        </div>
+
+        <!-- PvE Tab -->
+        <div class="tab-content" id="pve">
+            <h2 class="text-3xl font-bold text-[#D4A017] mb-5 text-center">PvE Battles</h2>
+            <div class="text-center">
+                <button id="start-pve-btn" class="btn py-3 px-8 text-xl">Start PvE Match</button>
+                <div id="pve-status" class="mt-3 text-[#ADD8E6] hidden"></div>
+            </div>
+        </div>
+
+        <!-- Packs Tab -->
+        <div class="tab-content" id="packs">
+            <h2 class="text-3xl font-bold text-center text-[#D4A017] mb-5 font-['MedievalSharp']">Open Card Packs</h2>
+            <div class="text-center mb-8">
+                <p class="text-xl text-gray-300 mb-4">Opening a pack gives you 3 random Season 0 cards with a chance for rare traits and Ethereal Signatures!</p>
+                <button id="buy-pack-button" class="btn-mint">Open Pack (100 $GBuX)</button>
+            </div>
+            <div class="pack-container" id="pack-container"></div>
+        </div>
+
+        <!-- Pack Opening Overlay -->
+        <div class="pack-opening hidden" id="pack-opening">
+            <div class="pack-cards">
+                <div class="pack-reveal-card" id="pack-card-1">
+                    <div class="pack-card-inner">
+                        <div class="pack-card-front"></div>
+                        <div class="pack-card-back" id="pack-card-back-1"></div>
+                    </div>
+                </div>
+                <div class="pack-reveal-card" id="pack-card-2">
+                    <div class="pack-card-inner">
+                        <div class="pack-card-front"></div>
+                        <div class="pack-card-back" id="pack-card-back-2"></div>
+                    </div>
+                </div>
+                <div class="pack-reveal-card" id="pack-card-3">
+                    <div class="pack-card-inner">
+                        <div class="pack-card-front"></div>
+                        <div class="pack-card-back" id="pack-card-back-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Events Tab -->
+        <div class="tab-content" id="events">
+            <h2 class="text-3xl font-bold text-[#D4A017] mb-5 text-center">Events</h2>
+            <p class="text-center">Coming soon! Check back for exciting events and challenges.</p>
+        </div>
+
+        <!-- Auction House Tab -->
+        <div class="tab-content" id="auction-house">
+            <h2 class="text-3xl font-bold text-[#D4A017] mb-5 text-center">Auction House</h2>
+            <p class="text-center">Coming soon! Bid on rare cards and items.</p>
+        </div>
+
+        <!-- Profile Modal -->
+        <div id="profile-modal" class="profile-modal">
+            <div class="profile-container">
+                <div class="profile-tabs">
+                    <div class="profile-tab active" data-tab="account">ACCOUNT</div>
+                    <div class="profile-tab" data-tab="messages">MESSAGES</div>
+                    <div class="profile-tab" data-tab="wallet">WALLET</div>
+                </div>
+                <div class="profile-content active" data-tab="account">
+                    <div class="profile-grid">
+                        <div class="profile-column">
+                            <h3 class="profile-section-title">Account Details</h3>
+                            <div class="profile-form">
+                                <div class="form-group">
+                                    <label class="form-label">Username</label>
+                                    <input type="text" id="username-input" class="form-input" value="GrudgeWarlord_42">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" id="email-input" class="form-input" value="warlord@example.com">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Wallet Address</label>
+                                    <input type="text" id="wallet-input" class="form-input readonly" value="0x123f456a789b123f456a789b123f456a789f" readonly>
+                                </div>
+                            </div>
+                            <button id="update-profile-btn" class="primary-button">Update Profile</button>
+                        </div>
+                        <div class="profile-column">
+                            <h3 class="profile-section-title">Game Statistics</h3>
+                            <div class="stats-grid">
+                                <div class="stat-item">
+                                    <div class="stat-value">12</div>
+                                    <div class="stat-label">Wins</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">8</div>
+                                    <div class="stat-label">Losses</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">148</div>
+                                    <div class="stat-label">Cards Owned</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">3</div>
+                                    <div class="stat-label">Packs Available</div>
+                                </div>
+                            </div>
+                            <h3 class="profile-section-title">AI Assistant Preference</h3>
+                            <div class="ai-options">
+                                <div class="ai-option active" id="ai-option-1" data-image="/assets/cyber_guide.png">
+                                    <img src="/assets/cyber_guide.png" alt="Cyber Guide" class="ai-option-img">
+                                    <div class="ai-option-label">Cyber Guide</div>
+                                </div>
+                                <div class="ai-option" id="ai-option-2" data-image="/assets/magic_advisor.png">
+                                    <img src="/assets/magic_advisor.png" alt="Magic Advisor" class="ai-option-img">
+                                    <div class="ai-option-label">Magic Advisor</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-content" data-tab="messages">
+                    <h3 class="profile-section-title">Messages</h3>
+                    <div class="search-container">
+                        <input type="text" placeholder="Search by wallet address or username..." class="search-input">
+                    </div>
+                    <div class="message-list">
+                        <div class="message-item">
+                            <div class="message-header">
+                                <div class="message-sender">CryptoWarrior_98</div>
+                                <div class="message-time">2 hours ago</div>
+                            </div>
+                            <div class="message-preview">Hey, do you want to trade that legendary card?</div>
+                        </div>
+                        <div class="message-item">
+                            <div class="message-header">
+                                <div class="message-sender">ETH_Master</div>
+                                <div class="message-time">Yesterday</div>
+                            </div>
+                            <div class="message-preview">Thanks for the game! That was an epic battle.</div>
+                        </div>
+                        <div class="message-item">
+                            <div class="message-header">
+                                <div class="message-sender">CardCollector42</div>
+                                <div class="message-time">3 days ago</div>
+                            </div>
+                            <div class="message-preview">Would you sell your Blood For Conquest cards?</div>
+                        </div>
+                    </div>
+                    <button id="new-message-btn" class="primary-button">New Message</button>
+                </div>
+                <div class="profile-content" data-tab="wallet">
+                    <div class="profile-grid">
+                        <div class="profile-column">
+                            <h3 class="profile-section-title">Wallet Details</h3>
+                            <div class="wallet-details">
+                                <div class="wallet-detail-row">
+                                    <span class="wallet-detail-label">Address:</span>
+                                    <span class="wallet-detail-value mono">0x123f456a789b123f456a789b123f456a789f</span>
+                                </div>
+                                <div class="wallet-detail-row">
+                                    <span class="wallet-detail-label">GBUX Balance:</span>
+                                    <span class="wallet-detail-value balance">5,280</span>
+                                </div>
+                                <div class="wallet-detail-row">
+                                    <span class="wallet-detail-label">Connected Since:</span>
+                                    <span class="wallet-detail-value">Mar 15, 2023</span>
+                                </div>
+                            </div>
+                            <h3 class="profile-section-title">Actions</h3>
+                            <div class="wallet-actions">
+                                <button id="buy-gbux-btn" class="primary-button full">Buy GBUX</button>
+                                <button id="transfer-btn" class="secondary-button full">Transfer to Another Wallet</button>
+                            </div>
+                        </div>
+                        <div class="profile-column">
+                            <h3 class="profile-section-title">Transaction History</h3>
+                            <div class="transaction-list">
+                                <div class="transaction-item">
+                                    <div class="transaction-header">
+                                        <span class="transaction-type">Pack Purchase</span>
+                                        <span class="transaction-amount negative">-500 GBUX</span>
+                                    </div>
+                                    <div class="transaction-time">Today, 14:32</div>
+                                </div>
+                                <div class="transaction-item">
+                                    <div class="transaction-header">
+                                        <span class="transaction-type">Card Sale</span>
+                                        <span class="transaction-amount positive">+780 GBUX</span>
+                                    </div>
+                                    <div class="transaction-time">Yesterday, 09:17</div>
+                                </div>
+                                <div class="transaction-item">
+                                    <div class="transaction-header">
+                                        <span class="transaction-type">Tournament Reward</span>
+                                        <span class="transaction-amount positive">+1,500 GBUX</span>
+                                    </div>
+                                    <div class="transaction-time">Mar 20, 2023</div>
+                                </div>
+                                <div class="transaction-item">
+                                    <div class="transaction-header">
+                                        <span class="transaction-type">GBUX Purchase</span>
+                                        <span class="transaction-amount positive">+5,000 GBUX</span>
+                                    </div>
+                                    <div class="transaction-time">Mar 15, 2023</div>
+                                </div>
+                            </div>
+                            <button id="view-history-btn" class="text-button">View Full Transaction History →</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-footer">
+                    <button id="close-profile-btn" class="secondary-button">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Assistant -->
+        <div id="ai-assistant" class="ai-assistant">
+            <img src="/assets/cyber_guide.png" alt="AI Assistant" class="ai-assistant-img">
+            <div class="chat-bubble" id="ai-bubble">Need help? Click to chat with me!</div>
+        </div>
+
+        <!-- Chat Panel -->
+        <div id="chat-panel" class="chat-panel">
+            <div class="chat-header">
+                <div class="chat-header-left">
+                    <img src="/assets/cyber_guide.png" alt="AI Assistant" class="ai-avatar">
+                    <span class="chat-title">Grudge Assistant</span>
+                </div>
+                <button id="close-chat" class="close-chat-btn">×</button>
+            </div>
+            <div id="chat-content" class="chat-content">
+                <div class="ai-message message">
+                    Hello Warlord! I'm your Grudge Assistant. How can I help you today?
+                </div>
+            </div>
+            <div class="chat-input-container">
+                <input type="text" id="chat-input" placeholder="Ask me anything..." class="chat-input">
+                <button id="send-chat" class="send-chat-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="send-icon" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Guilds/Wallet/Chat Icon -->
+        <img src="/assets/guilds_icon.png" alt="Guilds/Wallet/Chat" class="guilds-icon" id="guilds-icon">
+    </div>
+
+    <script src="/js/account.js"></script>
+    <script src="/js/assistant.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

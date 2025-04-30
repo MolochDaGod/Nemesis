@@ -1,0 +1,217 @@
+Season 0 Card Minting and Deck Pulling Prompt for Game AI
+Overview
+This prompt defines the mechanics for minting and pulling Season 0 cards in the Gruda game, including tribe assignments, abilities, rare traits, and Supabase database integration. Cards are either minted individually or pulled from packs (3 cards per pack), with a total of 100,000 Season 0 cards and 100 unique Ethereal Signature cards. The system ensures proper randomization, rarity, and data storage.
+Card Structure
+Each card has:
+
+ID: Unique identifier (1 to 100 for Season 0 cards).
+Tribe: One of Iron Will, Blood For Conquest, Fabled, Tribal War, or Ethereal Signature (ultra-rare, pack-only).
+Abilities: Tribe-specific ability plus optional new abilities (Haste, Give Allies +1 Attack, Double Strike, Stealth, Gold Shield).
+Rarity Traits: Optional Rare Glyph or Legendary Foil, applied via random rolls.
+Stats: Attack, Health, Mana Cost (base stats from season0.csv).
+Visuals: Tribe-specific background, effects, and rare trait visuals.
+Ownership: Linked to player’s wallet address.
+Serial Number: Unique per card instance (e.g., 1/100,000).
+
+Tribes and Abilities
+Every card is assigned a tribe during minting or pack pulling. Ethereal Signature cards are pack-only, with only one instance per card ID (100 total). Tribe abilities and visuals are:
+
+Iron Will 1
+
+Ability: Gains +0/+1 (attack/health) given to all other Iron Will on you side of the board
+Visual Effect: Flickering 5-7 rotaing https://i.imgur.com/6Qg5nyG.png
+Background: https://i.imgur.com/QPQXtX5.png
+Probability: 24.5% (equal distribution for non-Ethereal tribes).
+
+
+Blood For Conquest 2
+
+Ability: Gives other Blood For Conquest Minions +1 attack on turn played and has haste
+Visual Effect: Pulsing https://i.imgur.com/7N3EjUe.png glow and fading behind
+Background: https://i.imgur.com/zPayyR7.png
+Probability: 24.5%.
+
+
+Fabled 3
+
+Ability: Lowers the mana cost of all other cards in your hand cost cant go under 0
+Visual Effect: light particles https://i.imgur.com/JtgsWxOb.png on top of card flowing from middle to edges 
+Background: https://i.imgur.com/G0hXKXn.png
+Probability: 24.5%.
+
+
+Tribal War 4
+
+Ability: When played card summons a 1/1 with taunt
+Visual Effect: has https://i.imgur.com/VgHtim9.png in front of background and it breaks off to be the 1/1 with taunt
+Background: https://i.imgur.com/X8dIi5T.png
+Probability: 24.5%.
+
+
+Ethereal Signature (pack-only, 100 unique cards)
+
+Ability: has +2/+2 of the normal card
+Visual Effect: has this https://i.imgur.com/QqLfZMb.png glowing and rotatig behind minon
+Background: https://i.imgur.com/o0d99bB.png
+Probability: 2% per pack pull (100/100,000 cards = 0.1% per card slot, adjusted for 3-card packs).
+
+
+
+New Abilities
+Cards may randomly gain one of these additional abilities during minting or pulling, with a 5% chance per ability (independent rolls, max one per card to avoid overlap):
+
+Haste: Card can attack the turn it’s played. 
+
+Taunt: Cards must attack this card before being allowed to attack player again
+
+Visual: Red speed lines flash on play and has  https://i.imgur.com/OaIxVfq.png in to left top of card small as cost is on top right
+Database Field: has_haste: boolean.
+
+
+Give Allies +1 Attack: When played, all allied cards on board gain +1 attack until end of turn.
+
+Visual: Bright Red aura pulses over allied cards and has https://i.imgur.com/u95mHRc.png in to left top of card small as cost is on top right
+Database Field: has_allies_boost: boolean.
+
+
+Double Strike: Attacks twice per combat (same target, sequential damage).
+
+Visual: Dual sword slash animation on attack and has  https://i.imgur.com/t50dV5F.png in to left top of card small as cost is on top right
+Database Field: has_double_strike: boolean.
+
+
+Stealth: Invisible to opponent (cannot be targeted) until it attacks.
+
+Visual: Faint blur effect until first attack and has https://i.imgur.com/nDfL41t.png in to left top of card small as cost is on top right
+Database Field: has_stealth: boolean.
+
+
+Gold Shield: Absorbs the first instance of damage taken (once per game).
+
+Visual: Golden shield glow on play, shatters on first damage resultin in 0 damage to minon with shield. transparent 50%
+Database Field: has_gold_shield: boolean.
+
+Rare Rolls 
+
+Rare Glyph of life
+
+Visual: Glowing glyph in card middle image https://i.imgur.com/t5mq84x.png 50% transperncy 
+Database Field: has_rare_life: boolean, 
+glyph_ability: Gives 2 HP to all allies and to player can stack with  the +1 health from other effects
+
+Rare Glyph of Fire
+
+Visual: Glowing glyph in card middle image https://i.imgur.com/VJeVEqw.png 50% transparency 
+Database Field: has_rare_glyph: boolean, 
+glyph_ability: do 2 damage to all enemeies on play.
+
+
+Rare Legendary Foil
+
+Effect: +2 health, immune to destruction by abilities (combat damage still applies).
+Visual: https://i.imgur.com/iA0cqGn.png infront of background and going from 0-100 in transperancy ever seconds
+Database Field: has_legendary_foil: boolean.
+ 
+
+Minting Process for Player cards - made at mint tab
+
+Player Input:  Player selects a attack and defense paying more GBuX for each added stat they can add taunt for 20 gbux and add +1 health to all allies on play for 20 GBuX
+Player choses: a image to be his cards minion image by clicking UI requesting image
+Hits Mint (system check for enough GBuX if enough take GBuX amount for Mint and continue)
+Card Assignment: tribe (Iron Will, Blood For Conquest, Fabled, Tribal War; each 25% you cant roll a signature)
+Creates a Unique ID number for this card to be used in batabase and for permenant ownership of that Unique to be assigned to player in Playercard to show ownership
+Roll for new ability (10% per ability, max one).
+Roll for rare trait (3% for Rare Glyph, 2% for Legendary Foil, max one).
+
+Pack Pulling Process
+
+
+Card Assignment:
+For each card slot:
+2% chance for Ethereal Signature (if available; max 1 per card ID globally supabase manages the packs purchased and cards opened).
+Otherwise, randomly assign a tribe (24.5% each for non-Ethereal tribes).
+Select random card ID (1-100).
+Roll for new ability (10% per ability, max one).
+Roll for rare trait (5% for Rare Glyph of fire, 5% for Rare Glyph of life, 5% for Legendary Foil, max one).
+
+Pack Purchase: Player buys a pack for $GBuX, from pack tab receiving 3 cards face down with image https://i.imgur.com/nZgPzzk.png in shape of card, when clicked they rotate to reveal fully made card that has layered from furthers to closest on the ui background image of tribe is card outline and boarder and color (rest of images fit inside the background as that is the crds outline), rare trait image, card effects/animation, card info, minion/spell image, cost, attack, and health. so that we dont cover the things we need most
+
+
+Duplicate Check: Same as minting; auto-sell duplicates.
+Database Storage: Save all 3 cards to Supabase with there unique ID and add it to the 100,000 count.
+Visuals: Display cards with tribe background, rare trait, ability image, cost, attack, health, cards text and name as final card they recieve then give it small visuals and animations (bouncing effect on reveal) 2 seconds. When all three are opened close the UI of the cards opening and save to supbaes player cards update deck pull from 100,000 update and signature update if it happened.
+
+Supabase Database Schema
+Store cards and player data in Supabase for real-time tracking. Tables and fields:
+Table: cards
+
+card_id: UUID (unique per card instance).
+season0_id: Integer (1-100, references Season 0 card ID).
+tribe: String (IronWill, BloodForConquest, Fabled, TribalWar, EtherealSignature).
+owner_wallet: String (player’s wallet address).
+serial_number: Integer (1 to 100,000, unique per card instance).
+attack: Integer (base attack from season0.csv).
+health: Integer (base health, +2 if Legendary Foil).
+mana_cost: Integer (from season0.csv).
+has_haste: Boolean (default: false).
+has_allies_boost: Boolean (default: false).
+has_double_strike: Boolean (default: false).
+has_stealth: Boolean (default: false).
+has_gold_shield: Boolean (default: false).
+has_rare_glyph: Boolean (default: false).
+glyph_ability: String (null if no glyph, e.g., “regenerate”).
+has_legendary_foil: Boolean (default: false).
+created_at: Timestamp (mint/pull time).
+
+Table: players
+
+wallet_address: String (primary key).
+gbux_balance: Integer (tracks $GBuX for minting/packs).
+owned_cards: Array of UUIDs (references cards.card_id).
+
+Table: ethereal_signature_tracker
+
+season0_id: Integer (1-100, primary key).
+is_minted: Boolean (true if pulled, false otherwise).
+owner_wallet: String (null if not minted).
+
+Implementation Details
+
+Randomization: Use a cryptographically secure RNG for tribe, ability, and trait rolls to ensure fairness, and to assign each card a crypto ID that makes ownership go to wallet given to player
+Ethereal Signature LimitsFactors: Check ethereal_signature_tracker to enforce one-per-ID limit. If all 100 are minted, exclude from pulls never make a 2 signautre cards of same ID globally.
+Duplicate Handling: Query cards table for season0_id and tribe matches per owner_wallet. If found, credit $GBuX and skip storage.
+Animations: Apply Solitaire-like bounce (random speed, edge collision) on mint/pull. Use tribe-specific effects (e.g., red glow, butterfly lights) and rare trait visuals (foil overlay, glyph).
+UI: Display cards in Library tab as card unique id (with background, rare image, effects, minion/spell image, cost, attack, health, text), borders are tribe color, and stats (serial number is middle right of card small print). 
+Show “Buy” for unowned cards in library purchaesd cards only recieve a random tribe never a rare, signature, or ability added.
+Total Cards: Track 100,000 card limit via cards table count. Stop minting/pulling when reached.
+
+Error Handling
+
+Insufficient $GBuX: Reject mint/pack purchase if players.gbux_balance is too low.
+Database Failure: Retry Supabase writes up to 3 times; log errors for admin review, dont take gbux
+Invalid Card ID from packs: Ensure season0_id is 1-100; reject out-of-range values.
+
+Example Workflow
+
+Mint:
+Player can choes image from there local files to have as image for cards minion image area
+Player selects  attack and health, pays 10 $GBuX per stat.
+Player selects  given abilities taunt or/and +1 heal for 20 Gbux each
+Assign card ID Crypto hash, Unique id for made by players wallet number
+Roll: Rolls ability (10% to get one) Rolls rare (3% for Rare Glyph, 2% for Legendary Foil, max one)
+Check: No duplicate ID and Tribe in a players deck pay player and remove it if it happens then Save pack pulled cards, provide flickering, bounce animation
+
+
+EXAMPLE -
+Pack Pull:
+
+Player buys pack for 100 $GBuX, Supabaes identifies user checks for 100 removes the 100 and give a pack of 3 cards.
+Card 1: Fabled, ID 17, Double Strike, Rare Glyph (scry 2).
+Card 2: Blood For Conquest, ID 83, no extra ability, Legendary Foil.
+Card 3: Ethereal Signature, ID 95, no extra ability/trait.
+Check: No duplicates. Save to cards, update ethereal_signature_tracker for ID 95.
+Display with respective visuals and animations.
+
+
+
+This ensures a robust, fair, and visually engaging card system for Gruda Season 0, with proper database integration and rarity enforcement.
