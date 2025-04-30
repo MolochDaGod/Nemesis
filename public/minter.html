@@ -431,5 +431,310 @@
     <script src="/js/account.js"></script>
     <script src="/js/assistant.js"></script>
     <script src="/js/main.js"></script>
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD7mR6uRQ8RNqOf9nCjATLiXL3orJ39soo",
+            authDomain: "Model-wave-458100-h7-9bf03.firebaseapp.com",
+            projectId: "Model-wave-458100-h7-9bf03",
+            storageBucket: "Model-wave-458100-h7-9bf03",
+            messagingSenderId: "1021678965111",
+            appId: "1:1021678965111:web:8d2147a9fcc2359c771172"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // DOM elements
+        const card = document.getElementById('card');
+        const flipToBackBtn = document.getElementById('flip-to-back');
+        const flipToFrontBtn = document.getElementById('flip-to-front');
+        const loginForm = document.getElementById('login-form');
+        const discordLoginBtn = document.getElementById('discord-login');
+        const discordOAuthBtn = document.getElementById('discord-oauth');
+        const connectWalletBtn = document.getElementById('connect-wallet');
+        const walletAddressInput = document.getElementById('wallet-address');
+        const userDashboard = document.getElementById('user-dashboard');
+        const userDisplayName = document.getElementById('user-display-name');
+        const walletDisplay = document.getElementById('wallet-display');
+        const openPacksBtn = document.getElementById('open-packs-btn');
+        const auctionHouseBtn = document.getElementById('auction-house-btn');
+        const pvpBattleBtn = document.getElementById('pvp-battle-btn');
+        const eventsBtn = document.getElementById('events-btn');
+        const walletBtn = document.getElementById('wallet-btn');
+        const guildBtn = document.getElementById('guild-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const viewProgressBtn = document.getElementById('view-progress-btn');
+        const progressModal = document.getElementById('progress-modal');
+        const closeProgressBtn = document.getElementById('close-progress-btn');
+        const seasonProgress = document.getElementById('season-progress');
+        const cardsMintedCount = document.getElementById('cards-minted-count');
+        const cardsProgressBar = document.getElementById('cards-progress-bar');
+        const packsOwned = document.getElementById('packs-owned');
+        const cardsOwned = document.getElementById('cards-owned');
+
+        // Crossmint and webhook config
+        const CROSSMINT_PROJECT_ID = "8410e23e-d003-4061-9b65-7c886a6c46ec";
+        const CROSSMINT_SERVER_KEY = "sk_production_6627PmBFDZBZzt8ZgeSZ8AiD5e1hUsjyV3K1YQVpkkPEnfwGHhQng8ZhMmpQcv4gnNPSdZTmkAwP7xZBFTdAe5Z9BuwE5pBEq3AAKgaXr5ctKHLzDrj7VNqmW5m7nqVrLajZDnCoFSdSLeseS3KcaFxRh6z5BCdXJJKcwJZbyX3pNrQn7ksFKvcHPVzV7NSp3hmHWsMt4A1ADCDB4Utk1mnr";
+        const CROSSMINT_NFT_URL = "https://crossmint.com/api/2022-06-09/nfts";
+        const WEBHOOK_URL = "https://discord.com/api/webhooks/1343000704968556628/Zcbixg1sbvTZ2ptuKa5LkDyqOEhYkCTKebvaMlGKBIcZmqIgQJz6j92u1yRR6ImAYfra";
+        const DISCORD_CLIENT_ID = "1342593452793270302";
+        const DISCORD_REDIRECT_URI = "https://www.grudgeplatform.com/minter.html";
+
+        // Current user state
+        let currentWallet = null;
+        let cardStats = {
+            totalCards: parseInt(sessionStorage.getItem('totalCards')) || 0,
+            userPacks: parseInt(sessionStorage.getItem('userPacks')) || 0,
+            userCards: parseInt(sessionStorage.getItem('userCards')) || 0
+        };
+
+        // Check for existing session
+        const checkLoggedInUser = () => {
+            const walletAddress = sessionStorage.getItem('walletAddress');
+            if (walletAddress) {
+                currentWallet = walletAddress;
+                showUserDashboard();
+            }
+        };
+
+        // Show user dashboard
+        const showUserDashboard = () => {
+            card.classList.add('hidden');
+            userDashboard.classList.remove('hidden');
+            walletDisplay.textContent = currentWallet ? `${currentWallet.slice(0, 6)}...${currentWallet.slice(-4)}` : "No wallet connected";
+            userDisplayName.textContent = "Warlord";
+            updateCardStatsDisplay();
+        };
+
+        // Update card stats display
+        function updateCardStatsDisplay() {
+            seasonProgress.textContent = `Season0: ${cardStats.totalCards.toLocaleString()} / 100,000 Cards`;
+            cardsMintedCount.textContent = `${cardStats.totalCards.toLocaleString()} / 100,000`;
+            const progressPercentage = Math.min((cardStats.totalCards / 100000) * 100, 100);
+            cardsProgressBar.style.width = `${progressPercentage}%`;
+            packsOwned.textContent = cardStats.userPacks;
+            cardsOwned.textContent = cardStats.userCards;
+
+            if (cardStats.totalCards >= 25000) {
+                milestone1.classList.add('bg-green-500');
+                milestone1.classList.remove('bg-zinc-700');
+                milestone1Text.classList.add('text-green-400');
+                milestone1Text.classList.remove('text-gray-400');
+            }
+            if (cardStats.totalCards >= 50000) {
+                milestone2.classList.add('bg-green-500');
+                milestone2.classList.remove('bg-zinc-700');
+                milestone2Text.classList.add('text-green-400');
+                milestone2Text.classList.remove('text-gray-400');
+            }
+            if (cardStats.totalCards >= 75000) {
+                milestone3.classList.add('bg-green-500');
+                milestone3.classList.remove('bg-zinc-700');
+                milestone3Text.classList.add('text-green-400');
+                milestone3Text.classList.remove('text-gray-400');
+            }
+            if (cardStats.totalCards >= 100000) {
+                milestone4.classList.add('bg-green-500');
+                milestone4.classList.remove('bg-zinc-700');
+                milestone4Text.classList.add('text-green-400');
+                milestone4Text.classList.remove('text-gray-400');
+            }
+        }
+
+        // Card flip handlers
+        flipToBackBtn.addEventListener('click', () => {
+            card.classList.add('is-flipped');
+        });
+
+        flipToFrontBtn.addEventListener('click', () => {
+            card.classList.remove('is-flipped');
+        });
+
+        // Email login with Firebase
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            try {
+                await auth.signInWithEmailAndPassword(email, 'defaultPassword');
+                sessionStorage.setItem('walletAddress', email);
+                currentWallet = email;
+                await sendWebhook(`Email login: ${email}`);
+                showUserDashboard();
+            } catch (error) {
+                console.error("Login error:", error);
+                alert("Failed to login: " + error.message);
+            }
+        });
+
+        // Discord login with Firebase
+        discordLoginBtn.addEventListener('click', async () => {
+            const provider = new firebase.auth.OAuthProvider('discord.com');
+            provider.setCustomParameters({
+                client_id: DISCORD_CLIENT_ID,
+                redirect_uri: DISCORD_REDIRECT_URI,
+                scope: 'identify'
+            });
+            try {
+                const result = await auth.signInWithPopup(provider);
+                sessionStorage.setItem('walletAddress', result.user.email);
+                currentWallet = result.user.email;
+                await sendWebhook(`Discord login: ${result.user.email}`);
+                showUserDashboard();
+            } catch (error) {
+                console.error("Discord login error:", error);
+                alert("Discord login failed: " + error.message);
+            }
+        });
+
+        discordOAuthBtn.addEventListener('click', async () => {
+            const provider = new firebase.auth.OAuthProvider('discord.com');
+            provider.setCustomParameters({
+                client_id: DISCORD_CLIENT_ID,
+                redirect_uri: DISCORD_REDIRECT_URI,
+                scope: 'identify'
+            });
+            try {
+                const result = await auth.signInWithPopup(provider);
+                sessionStorage.setItem('walletAddress', result.user.email);
+                currentWallet = result.user.email;
+                await sendWebhook(`Discord OAuth login: ${result.user.email}`);
+                showUserDashboard();
+            } catch (error) {
+                console.error("Discord OAuth error:", error);
+                alert("Discord OAuth failed: " + error.message);
+            }
+        });
+
+        // Wallet connect handler
+        connectWalletBtn.addEventListener('click', async () => {
+            const walletAddress = walletAddressInput.value.trim();
+            if (walletAddress.startsWith('0x') && walletAddress.length === 42) {
+                sessionStorage.setItem('walletAddress', walletAddress);
+                currentWallet = walletAddress;
+                await sendWebhook(`Wallet connected: ${walletAddress}`);
+                showUserDashboard();
+            } else if (walletAddress.includes('@')) {
+                try {
+                    const wallet = await createWallet(walletAddress);
+                    sessionStorage.setItem('walletAddress', wallet.address);
+                    currentWallet = wallet.address;
+                    await sendWebhook(`Wallet created: ${wallet.address}`);
+                    showUserDashboard();
+                } catch (error) {
+                    console.error("Wallet creation error:", error);
+                    alert("Failed to create wallet: " + error.message);
+                }
+            } else {
+                alert("Please enter a valid Ethereum wallet address or email");
+            }
+        });
+
+        // Crossmint wallet creation
+        async function createWallet(email) {
+            const response = await fetch(`https://staging.crossmint.com/api/v1-alpha1/wallets`, {
+                method: 'POST',
+                headers: {
+                    'X-PROJECT-ID': CROSSMINT_PROJECT_ID,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: email,
+                    chain: 'story-testnet'
+                })
+            });
+            if (!response.ok) {
+                throw new Error('Failed to create wallet');
+            }
+            return await response.json();
+        }
+
+        // Discord webhook notification
+        async function sendWebhook(message) {
+            try {
+                await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: message })
+                });
+            } catch (error) {
+                console.error("Webhook error:", error);
+            }
+        }
+
+        // Navigation handlers
+        openPacksBtn.addEventListener('click', () => {
+            window.location.href = "/minter.html";
+        });
+
+        auctionHouseBtn.addEventListener('click', () => {
+            window.location.href = "/Massedit.html";
+        });
+
+        pvpBattleBtn.addEventListener('click', () => {
+            sessionStorage.setItem('pvpMode', 'true');
+            window.location.href = "/Nexus.html";
+        });
+
+        eventsBtn.addEventListener('click', () => {
+            window.location.href = "/events.html";
+        });
+
+        walletBtn.addEventListener('click', () => {
+            window.location.href = "/wallet.html";
+        });
+
+        guildBtn.addEventListener('click', () => {
+            window.location.href = "/guild.html";
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            await auth.signOut();
+            sessionStorage.removeItem('walletAddress');
+            sessionStorage.removeItem('userPacks');
+            sessionStorage.removeItem('userCards');
+            currentWallet = null;
+            userDashboard.classList.add('hidden');
+            card.classList.remove('hidden');
+            card.classList.remove('is-flipped');
+        });
+
+        viewProgressBtn.addEventListener('click', () => {
+            progressModal.classList.remove('hidden');
+        });
+
+        closeProgressBtn.addEventListener('click', () => {
+            progressModal.classList.add('hidden');
+        });
+
+        progressModal.addEventListener('click', (e) => {
+            if (e.target === progressModal) {
+                progressModal.classList.add('hidden');
+            }
+        });
+
+        // Create particle effect
+        const createParticles = () => {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                const size = Math.random() * 3 + 1;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                particle.style.opacity = Math.random() * 0.5 + 0.1;
+                particle.style.animation = `float ${Math.random() * 10 + 10}s linear infinite`;
+                particlesContainer.appendChild(particle);
+            }
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            checkLoggedInUser();
+        });
+    </script>
 </body>
 </html>
