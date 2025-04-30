@@ -255,51 +255,26 @@
         <div class="scene">
             <div class="card" id="card">
                 <!-- Front card face (Email Login) -->
-                <div class="card-face card-face-front" style="background-image: url('https://storage.googleapis.com/nexus-nemesis-assets-model-wave-458100-h7/red_background.png');">
-                    <div class="card-overlay"></div>
-                    <div class="card-badge">EMAIL LOGIN</div>
-                    <div class="card-content">
-                        <div class="flex-1 flex flex-col justify-center">
-                            <div class="text-center mb-6">
-                                <h2 class="text-2xl font-bold mb-1">BATTLE AWAITS</h2>
-                                <p class="text-gray-400 text-sm">Create wallet to continue your conquest</p>
-                            </div>
-                            
-                            <form id="login-form" class="space-y-4">
-                                <div class="space-y-2">
-                                    <label for="email" class="text-gray-300 block text-sm">Email</label>
-                                    <input 
-                                        type="email" 
-                                        id="email" 
-                                        placeholder="warlord@grudgestudio.com"
-                                        class="w-full px-4 py-2 rounded-md text-white"
-                                        required
-                                    >
-                                </div>
-                                
-                                <div class="pt-2">
-                                    <button 
-                                        type="submit"
-                                        class="w-full bg-gradient-to-r from-red-800 to-red-600 hover:from-red-700 hover:to-red-500 text-white py-2 rounded-md font-medium"
-                                    >
-                                        CREATE WALLET
-                                    </button>
-                                </div>
-                            </form>
-                            
-                            <div class="relative flex items-center gap-4 py-4">
-                                <div class="border-t border-zinc-800 flex-grow"></div>
-                                <span class="text-xs text-zinc-500">OR</span>
-                                <div class="border-t border-zinc-800 flex-grow"></div>
-                            </div>
-                            
-                            <button 
-                                id="discord-login"
-                                class="w-full bg-indigo-900/30 border border-indigo-800 text-white hover:bg-indigo-800/50 py-2 rounded-md font-medium flex items-center justify-center"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M20.317 4.492c-1.53-.69-3.17-1.2-4.885-1.49a.084.084 0 0 0-.09.036c-.242.42-.512.996-.7 1.444a16.089 16.089 0 0 0-4.854 0c-.188-.448-.464-1.025-.705-1.444a.09.09 0 0 0-.09-.036 19.03 19.03 0 0 0-4.884 1.491.075.075 0 0 0-.035.027C.533 9.093-.32 13.555.099 17.961a.08.08 0 0 0 .031.055 19.237 19.237 0 0 0 5.786 2.925.084.084 0 0 0 .092-.028c.495-.68.94-1.396 1.321-2.146a.082.082 0 0 0-.045-.115c-.576.337-1.178.628-1.805.865a.083.083 0 0 1-.008-.138c.121-.09.242-.186.357-.283a.085.085 0 0 1 .085-.013c4.296 1.968 8.948 1.968 13.201 0a.085.085 0 0 1 .085.013c.116.097.237.193.358.283a.083.083 0 0 1-.007.139c-.576.337-1.178.628-1.805.865a.082.082 0 0 0-.045.115c.388.75.826 1.466 1.32 2.146a.083.083 0 0 0 .092.028 19.188 19.188 0 0 0 5.786-2.925.085.085 0 0 0 .032-.055c.5-5.177-.838-9.674-3.549-13.442a.065.065 0 0 0-.035-.027zM8.02 15.278c-1.14 0-2.08-1.049-2.08-2.337 0-1.288.918-2.337 2.08-2.337 1.168 0 2.096 1.056 2.08 2.337 0 1.288-.918 2.337-2.08 2.337zm7.683 0c-1.14 0-2.08-1.049-2.08-2.337 0-1.288.918-2.337 2.08-2.337 1.168 0 2.096 1.056 2.08 2.337 0 1.288-.918 2.337-2.08 2.337z"/>
-                                </svg>
+               <div class="card-face card-face-front" style="background-image: url('https://storage.googleapis.com/nexus-nemesis-assets-model-wave-458100-h7/red_background.png');">
+        <div class="card-content">
+            <form id="login-form" class="space-y-4">
+                <div class="space-y-2">
+                    <label for="email" class="text-gray-300 block text-sm">Email</label>
+                    <input type="email" id="email" placeholder="warlord@grudgestudio.com" class="w-full px-4 py-2 rounded-md text-white" required>
+                </div>
+                <div class="space-y-2">
+                    <label for="password" class="text-gray-300 block text-sm">Password</label>
+                    <input type="password" id="password" placeholder="Enter password" class="w-full px-4 py-2 rounded-md text-white" required>
+                </div>
+                <div class="flex justify-between">
+                    <button type="submit" id="login-btn" class="bg-gradient-to-r from-red-800 to-red-600 text-white py-2 px-4 rounded-md font-medium">Login</button>
+                    <button type="button" id="register-btn" class="bg-gradient-to-r from-blue-800 to-blue-600 text-white py-2 px-4 rounded-md font-medium">Register</button>
+                </div>
+            </form>
+            <!-- Existing Discord login button -->
+        </div>
+    </div>
+
                                 CONNECT WITH DISCORD
                             </button>
                         </div>
