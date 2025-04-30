@@ -7,6 +7,16 @@
     "build:events": "NEXUS_ENV=events npm run build",
     "build:pvp": "NEXUS_ENV=pvp npm run build",
     "build:pve": "NEXUS_ENV=pve npm run build",
-    "build:wallet": "NEXUS_ENV=wallet npm run build"
+    "build:wallet": "NEXUS_ENV=wallet npm run build",
+    "build:index": "NEXUS_ENV=index npm run build",
+    "build:minter": "NEXUS_ENV=minter npm run build",
+    "build:crossmint": "NEXUS_ENV=crossmint npm run build",
+    "build:auction": "NEXUS_ENV=auction npm run build",
+    "build:nft": "NEXUS_ENV=nft npm run build",
+    "build:deploy-index": "npm run build:index && firebase deploy --only hosting:index",
+    "build:deploy-minter": "npm run build:minter && firebase deploy --only hosting:minter",
+    "build:deploy-crossmint": "npm run build:crossmint && firebase deploy --only hosting:crossmint",
+    "build:deploy-auction": "npm run build:auction && firebase deploy --only hosting:auction",
+    "build:deploy-nft": "npm run build:nft && firebase deploy --only hosting:nft"
   }
 }
