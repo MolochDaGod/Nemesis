@@ -506,6 +506,28 @@
 
     <script>
         // Firebase Configuration
+        const firebaseConfig = { /* Your config */ };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // DOM Elements
+        const loginForm = document.getElementById('login-form');
+        const loginBtn = document.getElementById('login-btn');
+        const registerBtn = document.getElementById('register-btn');
+        const discordLoginBtn = document.getElementById('discord-login');
+        const connectWalletBtn = document.getElementById('connect-wallet');
+        const walletAddressInput = document.getElementById('wallet-address');
+        const userDashboard = document.getElementById('user-dashboard');
+        const openPacksBtn = document.getElementById('open-packs-btn');
+
+        // Crossmint Config
+        const CROSSMINT_PROJECT_ID = "8410e23e-d003-4061-9b65-7c886a6c46ec";
+        const CROSSMINT_SERVER_KEY = "sk_production_6627PmBFDZBZzt8ZgeSZ8AiD5e1hUsjyV3K1YQVpkkPEnfwGHhQng8ZhMmpQcv4gnNPSdZTmkAwP7xZBFTdAe5Z9BuwE5pBEq3AAKgaXr5ctKHLzDrj7VNqmW5m7nqVrLajZDnCoFSdSLeseS3KcaFxRh6z5BCdXJJKcwJZbyX3pNrQn7ksFKvcHPVzV7NSp3hmHWsMt4A1ADCDB4Utk1mnr"; // Replace with your key
+        const WEBHOOK_URL = "https://discord.com/api/webhooks/1343000704968556628/Zcbixg1sbvTZ2ptuKa5LkDyqOEhYkCTKebvaMlGKBIcZmqIgQJz6j92u1yRR6ImAYfra";
+
+        let currentWallet = null;
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyD7mR6uRQ8RNqOf9nCjATLiXL3orJ39soo",
             authDomain: "Model-wave-458100-h7-9bf03.firebaseapp.com",
