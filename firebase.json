@@ -8,8 +8,16 @@
         ],
         "rewrites": [
             {
-                "source": "**",
+                "source": "/index.html",
                 "destination": "/index.html"
+            },
+            {
+                "source": "/minter.html",
+                "destination": "/minter.html"
+            },
+            {
+                "source": "/Nexus.html",
+                "destination": "/Nexus.html"
             }
         ]
     },
