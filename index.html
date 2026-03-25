@@ -604,10 +604,44 @@
 
             <!-- Tabs -->
             <div class="flex gap-1 mb-6 border-b border-gray-700">
+                <button class="tab-btn" data-tab="library">Library</button>
                 <button class="tab-btn active" data-tab="all-cards">All Cards</button>
                 <button class="tab-btn" data-tab="my-collection">My Collection (<span id="collection-count">0</span>)</button>
             </div>
         </header>
+
+        <!-- LIBRARY TAB -->
+        <div id="library-tab" class="mb-12 hidden">
+            <div class="flex flex-wrap gap-3 mb-6 items-center justify-between">
+                <div class="flex gap-2 items-center">
+                    <label class="text-xs text-gray-400">Sort:</label>
+                    <select id="lib-sort" class="bg-grudge-primary text-white text-xs px-3 py-1.5 rounded-lg border border-gray-600">
+                        <option value="price-asc">Price: Low → High</option>
+                        <option value="price-desc">Price: High → Low</option>
+                        <option value="name">Name A–Z</option>
+                        <option value="rarity">Rarity</option>
+                    </select>
+                </div>
+                <div class="flex gap-2 items-center">
+                    <label class="text-xs text-gray-400">Filter:</label>
+                    <select id="lib-filter" class="bg-grudge-primary text-white text-xs px-3 py-1.5 rounded-lg border border-gray-600">
+                        <option value="all">All</option>
+                        <option value="Minion">Minions</option>
+                        <option value="Spell">Spells</option>
+                        <option value="Hero">Heroes</option>
+                    </select>
+                    <select id="lib-rarity-filter" class="bg-grudge-primary text-white text-xs px-3 py-1.5 rounded-lg border border-gray-600">
+                        <option value="all">All Rarities</option>
+                        <option value="Common">Common</option>
+                        <option value="Uncommon">Uncommon</option>
+                        <option value="Rare">Rare</option>
+                        <option value="Epic">Epic</option>
+                        <option value="Legendary">Legendary</option>
+                    </select>
+                </div>
+            </div>
+            <div id="library-cards" class="card-grid"></div>
+        </div>
 
         <!-- ALL CARDS TAB -->
         <div id="all-cards-tab" class="card-grid mb-12"></div>
@@ -1162,7 +1196,179 @@
             const tab = btn.dataset.tab;
             document.getElementById('all-cards-tab').classList.toggle('hidden', tab !== 'all-cards');
             document.getElementById('my-collection-tab').classList.toggle('hidden', tab !== 'my-collection');
+            document.getElementById('library-tab').classList.toggle('hidden', tab !== 'library');
             if (tab === 'my-collection') loadCollection();
+            if (tab === 'library') loadLibrary();
+        });
+    });
+
+    // ==================== LIBRARY ====================
+    const NEXUS_API = window.location.hostname === 'localhost'
+        ? 'http://localhost:3100'
+        : 'https://nemesis-grudge.vercel.app';
+    let libraryData = null;
+
+    const RARITY_ORDER = { 'Common': 0, 'CommonHC': 1, 'Uncommon': 2, 'Uncommonhc': 3, 'Rare': 4, 'Epic': 5, 'Legendary': 6, 'StarterM': -1 };
+    const PRICE_TIER_COLORS = {
+        common:    { bg: 'rgba(128,128,128,0.15)', border: '#888', text: '#ccc' },
+        uncommon:  { bg: 'rgba(0,200,60,0.15)', border: '#00c83c', text: '#4ade80' },
+        rare:      { bg: 'rgba(180,0,255,0.15)', border: '#b400ff', text: '#c084fc' },
+        epic:      { bg: 'rgba(30,120,255,0.15)', border: '#1e78ff', text: '#60a5fa' },
+        legendary: { bg: 'rgba(255,215,0,0.15)', border: '#ffd700', text: '#fbbf24' },
+    };
+
+    async function loadLibrary() {
+        const container = document.getElementById('library-cards');
+        if (libraryData) { renderLibrary(libraryData); return; }
+        container.innerHTML = '<p class="text-gray-500 text-center col-span-full">Loading library...</p>';
+        try {
+            const res = await fetch(`${NEXUS_API}/api/nexus/library`);
+            libraryData = await res.json();
+            renderLibrary(libraryData);
+        } catch (err) {
+            console.error('Library load error:', err);
+            // Fallback: render from local CSV data with computed prices
+            libraryData = { cards: cards.map((c, i) => ({
+                id: parseInt(c.cardId),
+                name: c.name,
+                description: c.flavor_text,
+                image: c.image,
+                rarity: c.rarity,
+                type: c.type,
+                subtype: c.sub_type,
+                abilities: c.abilities,
+                gbuxPrice: computeLocalPrice(c),
+                priceTier: computeLocalTier(c),
+                available: 999,
+            })), totalCards: cards.length };
+            renderLibrary(libraryData);
+        }
+    }
+
+    function computeLocalPrice(card) {
+        const bases = { 'StarterM': 1, 'Common': 2, 'CommonHC': 5, 'Uncommon': 7, 'Uncommonhc': 10, 'Rare': 15, 'Epic': 25, 'Legendary': 40 };
+        let price = bases[card.rarity] || 2;
+        const a = (card.abilities || '').toLowerCase();
+        if (a.includes('deal')) price += 2;
+        if (a.includes('all enemy')) price += 3;
+        if (a.includes('restore')) price += 1;
+        if (a.includes('draw')) price += 2;
+        if (a.includes('take control') || a.includes('destroy')) price += 4;
+        if (a.includes('gold shield')) price += 4;
+        if (a.includes('double strike')) price += 3;
+        if (card.type === 'Hero') price += 5;
+        return Math.max(1, Math.min(51, price));
+    }
+    function computeLocalTier(card) {
+        const p = computeLocalPrice(card);
+        if (p <= 5) return 'common';
+        if (p <= 12) return 'uncommon';
+        if (p <= 22) return 'rare';
+        if (p <= 35) return 'epic';
+        return 'legendary';
+    }
+
+    function renderLibrary(data) {
+        const container = document.getElementById('library-cards');
+        container.innerHTML = '';
+        let items = [...data.cards];
+
+        // Filter
+        const typeFilter = document.getElementById('lib-filter').value;
+        if (typeFilter !== 'all') items = items.filter(c => c.type === typeFilter);
+        const rarFilter = document.getElementById('lib-rarity-filter').value;
+        if (rarFilter !== 'all') items = items.filter(c => c.rarity === rarFilter || c.rarity === rarFilter + 'HC' || c.rarity === rarFilter + 'hc');
+
+        // Sort
+        const sort = document.getElementById('lib-sort').value;
+        if (sort === 'price-asc') items.sort((a, b) => a.gbuxPrice - b.gbuxPrice);
+        else if (sort === 'price-desc') items.sort((a, b) => b.gbuxPrice - a.gbuxPrice);
+        else if (sort === 'name') items.sort((a, b) => a.name.localeCompare(b.name));
+        else if (sort === 'rarity') items.sort((a, b) => (RARITY_ORDER[b.rarity] || 0) - (RARITY_ORDER[a.rarity] || 0));
+
+        for (const card of items) {
+            const tc = PRICE_TIER_COLORS[card.priceTier] || PRICE_TIER_COLORS.common;
+            const el = document.createElement('div');
+            el.className = 'flex flex-col items-center';
+            el.innerHTML = `
+                <div class="relative cursor-pointer" onclick="showLibraryCardInfo(${card.id})">
+                    <div class="nexus-card rarity-${(card.rarity || 'common').toLowerCase()}" style="border:3px solid ${tc.border};">
+                        <div style="position:absolute;inset:0;background:radial-gradient(ellipse at center, #1a1f3a 0%, #0d1020 100%);z-index:0;border-radius:12px;"></div>
+                        <img src="${card.image}" class="layer card-art" style="object-fit:contain;object-position:center bottom;z-index:2;">
+                        <div class="info-zone">
+                            <div style="position:absolute;inset:0;background:linear-gradient(180deg, rgba(20,26,46,0.9) 0%, rgba(10,14,26,0.98) 100%);border-radius:0 0 12px 12px;z-index:0;"></div>
+                            <div class="card-name" style="color:#fff;text-shadow:0 1px 3px rgba(0,0,0,0.8);">${card.name}</div>
+                            <div class="card-flavor" style="color:#aaa;">${card.description || ''}</div>
+                            <div class="card-abilities-text" style="color:${tc.text};">${card.abilities || ''}</div>
+                        </div>
+                    </div>
+                    <div style="position:absolute;top:4px;right:4px;z-index:30;background:${tc.bg};border:1px solid ${tc.border};border-radius:8px;padding:2px 8px;">
+                        <span style="font-family:'Cinzel',serif;font-weight:900;font-size:0.85rem;color:${tc.text};">${card.gbuxPrice}</span>
+                        <span style="font-size:0.5rem;color:${tc.text};opacity:0.8;">GBUX</span>
+                    </div>
+                </div>
+                <button onclick="buyLibraryCard(${card.id})" class="mt-2 px-4 py-1.5 rounded-lg font-bold text-xs transition-all"
+                    style="background:${tc.bg};border:1px solid ${tc.border};color:${tc.text};"
+                    onmouseover="this.style.background='${tc.border}';this.style.color='#fff';"
+                    onmouseout="this.style.background='${tc.bg}';this.style.color='${tc.text}';">
+                    Buy · ${card.gbuxPrice} GBUX
+                </button>
+                <span class="text-xs text-gray-600 mt-1">${card.available !== undefined ? card.available + ' left' : ''}</span>
+            `;
+            container.appendChild(el);
+        }
+
+        if (items.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 text-center col-span-full">No cards match your filters.</p>';
+        }
+    }
+
+    function showLibraryCardInfo(baseCardId) {
+        const card = cards.find(c => parseInt(c.cardId) === baseCardId);
+        if (!card) return;
+        // Render in neutral style (no tribe)
+        const container = document.getElementById('info-card-container');
+        container.innerHTML = '';
+        // Use 'silver' tribe as base visual (neutral)
+        container.appendChild(renderCard(card, 'silver', false, null, null, null, null, 'large'));
+        const libCard = libraryData?.cards?.find(c => c.id === baseCardId);
+        const tc = PRICE_TIER_COLORS[libCard?.priceTier || 'common'];
+        document.getElementById('info-details').innerHTML = `
+            <p class="text-lg font-bold mb-1" style="color:#fff;">${card.name}</p>
+            <p class="text-sm text-gray-400 mb-1">${card.rarity} ${card.type} · ${card.sub_type}</p>
+            <p class="text-xs text-gray-500 italic mb-2">${card.flavor_text || ''}</p>
+            <p class="text-xs text-gray-400 mb-2">${card.abilities || 'No special abilities'}</p>
+            ${libCard ? `<p class="text-sm font-bold" style="color:${tc.text};">Library Price: ${libCard.gbuxPrice} GBUX</p>` : ''}
+        `;
+        document.getElementById('info-modal').classList.remove('hidden');
+    }
+
+    async function buyLibraryCard(baseCardId) {
+        if (!currentUser) { alert('Please login first to buy cards.'); return; }
+        const libCard = libraryData?.cards?.find(c => c.id === baseCardId);
+        if (!libCard) return;
+        if (!confirm(`Buy "${libCard.name}" for ${libCard.gbuxPrice} GBUX?`)) return;
+        try {
+            const res = await fetch(`${NEXUS_API}/api/nexus/library/buy`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
+                body: JSON.stringify({ grudgeId: currentUser.grudgeId, baseCardId }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Purchase failed');
+            alert(`Purchased "${libCard.name}"!`);
+            // Refresh stock
+            libraryData = null;
+            loadLibrary();
+        } catch (err) {
+            alert('Purchase failed: ' + err.message);
+        }
+    }
+
+    // Library filter/sort change listeners
+    ['lib-sort', 'lib-filter', 'lib-rarity-filter'].forEach(id => {
+        document.getElementById(id).addEventListener('change', () => {
+            if (libraryData) renderLibrary(libraryData);
         });
     });
 
