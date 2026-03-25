@@ -1,9 +1,20 @@
 const functions = require('firebase-functions');
-const admin = require('firebase-admin');
+const { initializeApp, getFirestore } = require('firebase-admin');
 const axios = require('axios');
 
-admin.initializeApp();
-const db = admin.firestore();
+const firebaseConfig = {
+  apiKey: "AIzaSyD7mR6uRQ8RNqOf9nCjATLiXL3orJ39soo",
+  authDomain: "model-wave-458100-h7-9bf03.firebaseapp.com",
+  databaseURL: "https://model-wave-458100-h7-9bf03-default-rtdb.firebaseio.com",
+  projectId: "model-wave-458100-h7-9bf03",
+  storageBucket: "model-wave-458100-h7-9bf03.appspot.com",
+  messagingSenderId: "1021678965111",
+  appId: "1:1021678965111:web:8d2147a9fcc2359c771172",
+  measurementId: "G-1WKSKDXLJE"
+};
+
+initializeApp(firebaseConfig);
+const db = getFirestore();
 
 const CROSSMINT_PROJECT_ID = '8410e23e-d003-4061-9b65-7c886a6c46ec';
 const CROSSMINT_SERVER_KEY = 'sk_production_6627PmBFDZBZzt8ZgeSZ8AiD5e1hUsjyV3K1YQVpkkPEnfwGHhQng8ZhMmpQcv4gnNPSdZTmkAwP7xZBFTdAe5Z9BuwE5pBEq3AAKgaXr5ctKHLzDrj7VNqmW5m7nqVrLajZDnCoFSdSLeseS3KcaFxRh6z5BCdXJJKcwJZbyX3pNrQn7ksFKvcHPVzV7NSp3hmHWsMt4A1ADCDB4Utk1mnr';

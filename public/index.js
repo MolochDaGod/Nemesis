@@ -1,5 +1,5 @@
 const functions = require('firebase-functions');
-const admin = require('firebase-admin');
+const { initializeApp, getFirestore } = require('firebase-admin');
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
@@ -7,9 +7,19 @@ const { createClient } = require('@supabase/supabase-js');
 const fs = require('fs');
 const { parse } = require('csv-parse/sync');
 
-admin.initializeApp();
-const app = express();
-app.use(cors({ origin: true }));
+const firebaseConfig = {
+  apiKey: "AIzaSyD7mR6uRQ8RNqOf9nCjATLiXL3orJ39soo",
+  authDomain: "model-wave-458100-h7-9bf03.firebaseapp.com",
+  databaseURL: "https://model-wave-458100-h7-9bf03-default-rtdb.firebaseio.com",
+  projectId: "model-wave-458100-h7-9bf03",
+  storageBucket: "model-wave-458100-h7-9bf03.appspot.com",
+  messagingSenderId: "1021678965111",
+  appId: "1:1021678965111:web:8d2147a9fcc2359c771172",
+  measurementId: "G-1WKSKDXLJE"
+};
+
+initializeApp(firebaseConfig);
+const db = getFirestore();
 
 const BUCKET_NAME = functions.config().gcp.storage_bucket;
 const SUPABASE_URL = functions.config().supabase.url;
